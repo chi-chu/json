@@ -1,4 +1,4 @@
-module github.com/chi-chu/go
+module github.com/chi-chu/json
 
 go 1.12
 
