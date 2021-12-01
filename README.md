@@ -1,85 +1,62 @@
-[![Sourcegraph](https://sourcegraph.com/github.com/json-iterator/go/-/badge.svg)](https://sourcegraph.com/github.com/json-iterator/go?badge)
-[![GoDoc](http://img.shields.io/badge/go-documentation-blue.svg?style=flat-square)](https://pkg.go.dev/github.com/json-iterator/go)
-[![Build Status](https://travis-ci.org/json-iterator/go.svg?branch=master)](https://travis-ci.org/json-iterator/go)
-[![codecov](https://codecov.io/gh/json-iterator/go/branch/master/graph/badge.svg)](https://codecov.io/gh/json-iterator/go)
-[![rcard](https://goreportcard.com/badge/github.com/json-iterator/go)](https://goreportcard.com/report/github.com/json-iterator/go)
-[![License](http://img.shields.io/badge/license-mit-blue.svg?style=flat-square)](https://raw.githubusercontent.com/json-iterator/go/master/LICENSE)
-[![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/json-iterator/Lobby)
+# JSON
+a json lib
+## Warning
+in order to google proto,  int64, uint64 and other type will be transfer 
+to string in protoMarshal,  so if you want to give a int64 to javascript
+make sure that the number less than 2^52 -1
+ 
+for more information:  
+https://developers.google.com/protocol-buffers/docs/proto3#json  
+  
+https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MAX_SAFE_INTEGER
 
-A high-performance 100% compatible drop-in replacement of "encoding/json"
+#### desc
+sometimes we should use the same proto.go file to return http response,
+and the json data will avoid omitempty key, but if we want to both run
+grpc or other rpc service and http service to return answer through 
+proto struct,  we can use this lib api  **MarshalAvoidOmit(v interface{})**
 
-# Benchmark
-
-![benchmark](http://jsoniter.com/benchmarks/go-benchmark.png)
-
-Source code: https://github.com/json-iterator/go-benchmark/blob/master/src/github.com/json-iterator/go-benchmark/benchmark_medium_payload_test.go
-
-Raw Result (easyjson requires static code generation)
-
-|                 | ns/op       | allocation bytes | allocation times |
-| --------------- | ----------- | ---------------- | ---------------- |
-| std decode      | 35510 ns/op | 1960 B/op        | 99 allocs/op     |
-| easyjson decode | 8499 ns/op  | 160 B/op         | 4 allocs/op      |
-| jsoniter decode | 5623 ns/op  | 160 B/op         | 3 allocs/op      |
-| std encode      | 2213 ns/op  | 712 B/op         | 5 allocs/op      |
-| easyjson encode | 883 ns/op   | 576 B/op         | 3 allocs/op      |
-| jsoniter encode | 837 ns/op   | 384 B/op         | 4 allocs/op      |
-
-Always benchmark with your own workload.
-The result depends heavily on the data input.
-
-# Usage
-
-100% compatibility with standard lib
-
-Replace
-
+#### example
 ```go
-import "encoding/json"
-json.Marshal(&data)
+package main
+
+import (
+	"fmt"
+	myjson "github.com/chi-chu/json"
+)
+
+type person struct {
+	Name string `json:"name,omitempty"`
+	Age  int `json:"age,omitempty"`
+}
+
+func main() {
+	a := myjson.ConfigCompatibleWithStandardLibrary
+	b, err := a.Marshal(map[string]string{"abc":"cs"})
+	fmt.Println(string(b), err)
+	b, err = a.MarshalAvoidOmit(&person{
+		Name: "",
+		Age:  0,
+	})
+	fmt.Println(string(b), err)
+	b, err = a.Marshal(&person{
+		Name: "",
+		Age:  0,
+	})
+	fmt.Println(string(b), err)
+}
 ```
 
-with
-
-```go
-import jsoniter "github.com/json-iterator/go"
-
-var json = jsoniter.ConfigCompatibleWithStandardLibrary
-json.Marshal(&data)
+and this will output
+```
+{"abc":"cs"} <nil>
+{"name":"","age":0} <nil>
+{} <nil>
 ```
 
-Replace
 
-```go
-import "encoding/json"
-json.Unmarshal(input, &data)
-```
+#### In Chinese
 
-with
-
-```go
-import jsoniter "github.com/json-iterator/go"
-
-var json = jsoniter.ConfigCompatibleWithStandardLibrary
-json.Unmarshal(input, &data)
-```
-
-[More documentation](http://jsoniter.com/migrate-from-go-std.html)
-
-# How to get
-
-```
-go get github.com/json-iterator/go
-```
-
-# Contribution Welcomed !
-
-Contributors
-
-- [thockin](https://github.com/thockin)
-- [mattn](https://github.com/mattn)
-- [cch123](https://github.com/cch123)
-- [Oleg Shaldybin](https://github.com/olegshaldybin)
-- [Jason Toffaletti](https://github.com/toffaletti)
-
-Report issue or pull request, or email taowen@gmail.com, or [![Gitter chat](https://badges.gitter.im/gitterHQ/gitter.png)](https://gitter.im/json-iterator/Lobby)
+开启http和rpc服务，通过同一套 proto 结构定义返回， 对于http的服务， json编码会被proto.go
+文件的omitempty忽略， 通过 **MarshalAvoidOmit(v interface{})** 这个方法，将不会忽略
+输出完整的json

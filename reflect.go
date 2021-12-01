@@ -27,7 +27,7 @@ type ValDecoder interface {
 // For json.Encoder's adapter, refer to jsoniter.AdapterEncoder(todo godoc link).
 type ValEncoder interface {
 	IsEmpty(ptr unsafe.Pointer) bool
-	Encode(ptr unsafe.Pointer, stream *Stream)
+	Encode(ptr unsafe.Pointer, stream *Stream, om bool)
 }
 
 type checkIsEmpty interface {
@@ -84,7 +84,7 @@ func (iter *Iterator) ReadVal(obj interface{}) {
 }
 
 // WriteVal copy the go interface into underlying JSON, same as json.Marshal
-func (stream *Stream) WriteVal(val interface{}) {
+func (stream *Stream) WriteVal(val interface{}, om bool) {
 	if nil == val {
 		stream.WriteNil()
 		return
@@ -95,7 +95,7 @@ func (stream *Stream) WriteVal(val interface{}) {
 		typ := reflect2.TypeOf(val)
 		encoder = stream.cfg.EncoderOf(typ)
 	}
-	encoder.Encode(reflect2.PtrOf(val), stream)
+	encoder.Encode(reflect2.PtrOf(val), stream, om)
 }
 
 func (cfg *frozenConfig) DecoderOf(typ reflect2.Type) ValDecoder {
@@ -215,8 +215,8 @@ func (encoder *onePtrEncoder) IsEmpty(ptr unsafe.Pointer) bool {
 	return encoder.encoder.IsEmpty(unsafe.Pointer(&ptr))
 }
 
-func (encoder *onePtrEncoder) Encode(ptr unsafe.Pointer, stream *Stream) {
-	encoder.encoder.Encode(unsafe.Pointer(&ptr), stream)
+func (encoder *onePtrEncoder) Encode(ptr unsafe.Pointer, stream *Stream, om bool) {
+	encoder.encoder.Encode(unsafe.Pointer(&ptr), stream, om)
 }
 
 func encoderOfType(ctx *ctx, typ reflect2.Type) ValEncoder {
@@ -304,7 +304,7 @@ type lazyErrorEncoder struct {
 	err error
 }
 
-func (encoder *lazyErrorEncoder) Encode(ptr unsafe.Pointer, stream *Stream) {
+func (encoder *lazyErrorEncoder) Encode(ptr unsafe.Pointer, stream *Stream, om bool) {
 	if ptr == nil {
 		stream.WriteNil()
 	} else if stream.Error == nil {
@@ -328,8 +328,8 @@ type placeholderEncoder struct {
 	encoder ValEncoder
 }
 
-func (encoder *placeholderEncoder) Encode(ptr unsafe.Pointer, stream *Stream) {
-	encoder.encoder.Encode(ptr, stream)
+func (encoder *placeholderEncoder) Encode(ptr unsafe.Pointer, stream *Stream, om bool) {
+	encoder.encoder.Encode(ptr, stream, om)
 }
 
 func (encoder *placeholderEncoder) IsEmpty(ptr unsafe.Pointer) bool {

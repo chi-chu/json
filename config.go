@@ -34,6 +34,7 @@ type API interface {
 	StreamPool
 	MarshalToString(v interface{}) (string, error)
 	Marshal(v interface{}) ([]byte, error)
+	MarshalAvoidOmit(v interface{}) ([]byte, error)
 	MarshalIndent(v interface{}, prefix, indent string) ([]byte, error)
 	UnmarshalFromString(str string, v interface{}) error
 	Unmarshal(data []byte, v interface{}) error
@@ -228,7 +229,7 @@ func (cfg *frozenConfig) RegisterExtension(extension Extension) {
 type lossyFloat32Encoder struct {
 }
 
-func (encoder *lossyFloat32Encoder) Encode(ptr unsafe.Pointer, stream *Stream) {
+func (encoder *lossyFloat32Encoder) Encode(ptr unsafe.Pointer, stream *Stream, om bool) {
 	stream.WriteFloat32Lossy(*((*float32)(ptr)))
 }
 
@@ -239,7 +240,7 @@ func (encoder *lossyFloat32Encoder) IsEmpty(ptr unsafe.Pointer) bool {
 type lossyFloat64Encoder struct {
 }
 
-func (encoder *lossyFloat64Encoder) Encode(ptr unsafe.Pointer, stream *Stream) {
+func (encoder *lossyFloat64Encoder) Encode(ptr unsafe.Pointer, stream *Stream, om bool) {
 	stream.WriteFloat64Lossy(*((*float64)(ptr)))
 }
 
@@ -258,7 +259,7 @@ func (cfg *frozenConfig) marshalFloatWith6Digits(extension EncoderExtension) {
 type htmlEscapedStringEncoder struct {
 }
 
-func (encoder *htmlEscapedStringEncoder) Encode(ptr unsafe.Pointer, stream *Stream) {
+func (encoder *htmlEscapedStringEncoder) Encode(ptr unsafe.Pointer, stream *Stream, om bool) {
 	str := *((*string)(ptr))
 	stream.WriteStringWithHTMLEscaped(str)
 }
@@ -286,7 +287,7 @@ func (cfg *frozenConfig) cleanEncoders() {
 func (cfg *frozenConfig) MarshalToString(v interface{}) (string, error) {
 	stream := cfg.BorrowStream(nil)
 	defer cfg.ReturnStream(stream)
-	stream.WriteVal(v)
+	stream.WriteVal(v, false)
 	if stream.Error != nil {
 		return "", stream.Error
 	}
@@ -296,7 +297,20 @@ func (cfg *frozenConfig) MarshalToString(v interface{}) (string, error) {
 func (cfg *frozenConfig) Marshal(v interface{}) ([]byte, error) {
 	stream := cfg.BorrowStream(nil)
 	defer cfg.ReturnStream(stream)
-	stream.WriteVal(v)
+	stream.WriteVal(v, false)
+	if stream.Error != nil {
+		return nil, stream.Error
+	}
+	result := stream.Buffer()
+	copied := make([]byte, len(result))
+	copy(copied, result)
+	return copied, nil
+}
+
+func (cfg *frozenConfig) MarshalAvoidOmit(v interface{}) ([]byte, error) {
+	stream := cfg.BorrowStream(nil)
+	defer cfg.ReturnStream(stream)
+	stream.WriteVal(v, true)
 	if stream.Error != nil {
 		return nil, stream.Error
 	}

@@ -24,7 +24,7 @@ func encoderOfArray(ctx *ctx, typ reflect2.Type) ValEncoder {
 
 type emptyArrayEncoder struct{}
 
-func (encoder emptyArrayEncoder) Encode(ptr unsafe.Pointer, stream *Stream) {
+func (encoder emptyArrayEncoder) Encode(ptr unsafe.Pointer, stream *Stream, om bool) {
 	stream.WriteEmptyArray()
 }
 
@@ -37,14 +37,14 @@ type arrayEncoder struct {
 	elemEncoder ValEncoder
 }
 
-func (encoder *arrayEncoder) Encode(ptr unsafe.Pointer, stream *Stream) {
+func (encoder *arrayEncoder) Encode(ptr unsafe.Pointer, stream *Stream, om bool) {
 	stream.WriteArrayStart()
 	elemPtr := unsafe.Pointer(ptr)
-	encoder.elemEncoder.Encode(elemPtr, stream)
+	encoder.elemEncoder.Encode(elemPtr, stream, om)
 	for i := 1; i < encoder.arrayType.Len(); i++ {
 		stream.WriteMore()
 		elemPtr = encoder.arrayType.UnsafeGetIndex(ptr, i)
-		encoder.elemEncoder.Encode(elemPtr, stream)
+		encoder.elemEncoder.Encode(elemPtr, stream, om)
 	}
 	stream.WriteArrayEnd()
 	if stream.Error != nil && stream.Error != io.EOF {

@@ -291,7 +291,7 @@ func (codec *anyCodec) Decode(ptr unsafe.Pointer, iter *Iterator) {
 	panic("not implemented")
 }
 
-func (codec *anyCodec) Encode(ptr unsafe.Pointer, stream *Stream) {
+func (codec *anyCodec) Encode(ptr unsafe.Pointer, stream *Stream, om bool) {
 	obj := codec.valType.UnsafeIndirect(ptr)
 	any := obj.(Any)
 	any.WriteTo(stream)
@@ -310,7 +310,7 @@ func (codec *directAnyCodec) Decode(ptr unsafe.Pointer, iter *Iterator) {
 	*(*Any)(ptr) = iter.readAny()
 }
 
-func (codec *directAnyCodec) Encode(ptr unsafe.Pointer, stream *Stream) {
+func (codec *directAnyCodec) Encode(ptr unsafe.Pointer, stream *Stream, om bool) {
 	any := *(*Any)(ptr)
 	if any == nil {
 		stream.WriteNil()

@@ -217,9 +217,9 @@ type numericMapKeyEncoder struct {
 	encoder ValEncoder
 }
 
-func (encoder *numericMapKeyEncoder) Encode(ptr unsafe.Pointer, stream *Stream) {
+func (encoder *numericMapKeyEncoder) Encode(ptr unsafe.Pointer, stream *Stream, om bool) {
 	stream.writeByte('"')
-	encoder.encoder.Encode(ptr, stream)
+	encoder.encoder.Encode(ptr, stream, om)
 	stream.writeByte('"')
 }
 
@@ -232,9 +232,9 @@ type dynamicMapKeyEncoder struct {
 	valType reflect2.Type
 }
 
-func (encoder *dynamicMapKeyEncoder) Encode(ptr unsafe.Pointer, stream *Stream) {
+func (encoder *dynamicMapKeyEncoder) Encode(ptr unsafe.Pointer, stream *Stream, om bool) {
 	obj := encoder.valType.UnsafeIndirect(ptr)
-	encoderOfMapKey(encoder.ctx, reflect2.TypeOf(obj)).Encode(reflect2.PtrOf(obj), stream)
+	encoderOfMapKey(encoder.ctx, reflect2.TypeOf(obj)).Encode(reflect2.PtrOf(obj), stream, om)
 }
 
 func (encoder *dynamicMapKeyEncoder) IsEmpty(ptr unsafe.Pointer) bool {
@@ -248,7 +248,7 @@ type mapEncoder struct {
 	elemEncoder ValEncoder
 }
 
-func (encoder *mapEncoder) Encode(ptr unsafe.Pointer, stream *Stream) {
+func (encoder *mapEncoder) Encode(ptr unsafe.Pointer, stream *Stream, om bool) {
 	if *(*unsafe.Pointer)(ptr) == nil {
 		stream.WriteNil()
 		return
@@ -260,13 +260,13 @@ func (encoder *mapEncoder) Encode(ptr unsafe.Pointer, stream *Stream) {
 			stream.WriteMore()
 		}
 		key, elem := iter.UnsafeNext()
-		encoder.keyEncoder.Encode(key, stream)
+		encoder.keyEncoder.Encode(key, stream, om)
 		if stream.indention > 0 {
 			stream.writeTwoBytes(byte(':'), byte(' '))
 		} else {
 			stream.writeByte(':')
 		}
-		encoder.elemEncoder.Encode(elem, stream)
+		encoder.elemEncoder.Encode(elem, stream, om)
 	}
 	stream.WriteObjectEnd()
 }
@@ -282,7 +282,7 @@ type sortKeysMapEncoder struct {
 	elemEncoder ValEncoder
 }
 
-func (encoder *sortKeysMapEncoder) Encode(ptr unsafe.Pointer, stream *Stream) {
+func (encoder *sortKeysMapEncoder) Encode(ptr unsafe.Pointer, stream *Stream, om bool) {
 	if *(*unsafe.Pointer)(ptr) == nil {
 		stream.WriteNil()
 		return
@@ -296,7 +296,7 @@ func (encoder *sortKeysMapEncoder) Encode(ptr unsafe.Pointer, stream *Stream) {
 	for mapIter.HasNext() {
 		key, elem := mapIter.UnsafeNext()
 		subStreamIndex := subStream.Buffered()
-		encoder.keyEncoder.Encode(key, subStream)
+		encoder.keyEncoder.Encode(key, subStream, om)
 		if subStream.Error != nil && subStream.Error != io.EOF && stream.Error == nil {
 			stream.Error = subStream.Error
 		}
@@ -308,7 +308,7 @@ func (encoder *sortKeysMapEncoder) Encode(ptr unsafe.Pointer, stream *Stream) {
 		} else {
 			subStream.writeByte(':')
 		}
-		encoder.elemEncoder.Encode(elem, subStream)
+		encoder.elemEncoder.Encode(elem, subStream, om)
 		keyValues = append(keyValues, encodedKV{
 			key:      decodedKey,
 			keyValue: subStream.Buffer()[subStreamIndex:],

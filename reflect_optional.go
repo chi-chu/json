@@ -63,11 +63,11 @@ type OptionalEncoder struct {
 	ValueEncoder ValEncoder
 }
 
-func (encoder *OptionalEncoder) Encode(ptr unsafe.Pointer, stream *Stream) {
+func (encoder *OptionalEncoder) Encode(ptr unsafe.Pointer, stream *Stream, om bool) {
 	if *((*unsafe.Pointer)(ptr)) == nil {
 		stream.WriteNil()
 	} else {
-		encoder.ValueEncoder.Encode(*((*unsafe.Pointer)(ptr)), stream)
+		encoder.ValueEncoder.Encode(*((*unsafe.Pointer)(ptr)), stream, om)
 	}
 }
 
@@ -79,11 +79,11 @@ type dereferenceEncoder struct {
 	ValueEncoder ValEncoder
 }
 
-func (encoder *dereferenceEncoder) Encode(ptr unsafe.Pointer, stream *Stream) {
+func (encoder *dereferenceEncoder) Encode(ptr unsafe.Pointer, stream *Stream, om bool) {
 	if *((*unsafe.Pointer)(ptr)) == nil {
 		stream.WriteNil()
 	} else {
-		encoder.ValueEncoder.Encode(*((*unsafe.Pointer)(ptr)), stream)
+		encoder.ValueEncoder.Encode(*((*unsafe.Pointer)(ptr)), stream, om)
 	}
 }
 
@@ -112,8 +112,8 @@ type referenceEncoder struct {
 	encoder ValEncoder
 }
 
-func (encoder *referenceEncoder) Encode(ptr unsafe.Pointer, stream *Stream) {
-	encoder.encoder.Encode(unsafe.Pointer(&ptr), stream)
+func (encoder *referenceEncoder) Encode(ptr unsafe.Pointer, stream *Stream, om bool) {
+	encoder.encoder.Encode(unsafe.Pointer(&ptr), stream, om)
 }
 
 func (encoder *referenceEncoder) IsEmpty(ptr unsafe.Pointer) bool {

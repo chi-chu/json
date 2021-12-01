@@ -178,7 +178,7 @@ type funcEncoder struct {
 	isEmptyFunc func(ptr unsafe.Pointer) bool
 }
 
-func (encoder *funcEncoder) Encode(ptr unsafe.Pointer, stream *Stream) {
+func (encoder *funcEncoder) Encode(ptr unsafe.Pointer, stream *Stream, om bool) {
 	encoder.fun(ptr, stream)
 }
 

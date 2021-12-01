@@ -40,7 +40,7 @@ func (codec *jsonRawMessageCodec) Decode(ptr unsafe.Pointer, iter *Iterator) {
 	}
 }
 
-func (codec *jsonRawMessageCodec) Encode(ptr unsafe.Pointer, stream *Stream) {
+func (codec *jsonRawMessageCodec) Encode(ptr unsafe.Pointer, stream *Stream, om bool) {
 	if *((*json.RawMessage)(ptr)) == nil {
 		stream.WriteNil()
 	} else {
@@ -63,7 +63,7 @@ func (codec *jsoniterRawMessageCodec) Decode(ptr unsafe.Pointer, iter *Iterator)
 	}
 }
 
-func (codec *jsoniterRawMessageCodec) Encode(ptr unsafe.Pointer, stream *Stream) {
+func (codec *jsoniterRawMessageCodec) Encode(ptr unsafe.Pointer, stream *Stream, om bool) {
 	if *((*RawMessage)(ptr)) == nil {
 		stream.WriteNil()
 	} else {

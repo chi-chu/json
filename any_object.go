@@ -250,7 +250,7 @@ func (any *objectAny) Size() int {
 }
 
 func (any *objectAny) WriteTo(stream *Stream) {
-	stream.WriteVal(any.val)
+	stream.WriteVal(any.val, false)
 }
 
 func (any *objectAny) GetInterface() interface{} {
@@ -366,7 +366,7 @@ func (any *mapAny) Size() int {
 }
 
 func (any *mapAny) WriteTo(stream *Stream) {
-	stream.WriteVal(any.val)
+	stream.WriteVal(any.val, false)
 }
 
 func (any *mapAny) GetInterface() interface{} {

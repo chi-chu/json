@@ -270,7 +270,7 @@ func (any *arrayAny) Size() int {
 }
 
 func (any *arrayAny) WriteTo(stream *Stream) {
-	stream.WriteVal(any.val)
+	stream.WriteVal(any.val, false)
 }
 
 func (any *arrayAny) GetInterface() interface{} {

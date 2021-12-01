@@ -10,9 +10,9 @@ type dynamicEncoder struct {
 	valType reflect2.Type
 }
 
-func (encoder *dynamicEncoder) Encode(ptr unsafe.Pointer, stream *Stream) {
+func (encoder *dynamicEncoder) Encode(ptr unsafe.Pointer, stream *Stream, om bool) {
 	obj := encoder.valType.UnsafeIndirect(ptr)
-	stream.WriteVal(obj)
+	stream.WriteVal(obj, om)
 }
 
 func (encoder *dynamicEncoder) IsEmpty(ptr unsafe.Pointer) bool {
