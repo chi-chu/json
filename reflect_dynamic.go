@@ -1,4 +1,4 @@
-package jsoniter
+package json
 
 import (
 	"github.com/modern-go/reflect2"

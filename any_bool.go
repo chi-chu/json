@@ -1,4 +1,4 @@
-package jsoniter
+package json
 
 type trueAny struct {
 	baseAny

@@ -1,6 +1,6 @@
 //+build jsoniter_sloppy
 
-package jsoniter
+package json
 
 import (
 	"github.com/stretchr/testify/require"

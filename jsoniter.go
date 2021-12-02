@@ -1,4 +1,4 @@
-// Package jsoniter implements encoding and decoding of JSON as defined in
+// package json implements encoding and decoding of JSON as defined in
 // RFC 4627 and provides interfaces with identical syntax of standard lib encoding/json.
 // Converting from encoding/json to jsoniter is no more than replacing the package with jsoniter
 // and variable type declarations (if any).
@@ -15,4 +15,4 @@
 // and yielding parsed elements one by one.
 // This set of interfaces reads input as required and gives
 // better performance.
-package jsoniter
+package json

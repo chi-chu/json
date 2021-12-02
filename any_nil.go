@@ -1,4 +1,4 @@
-package jsoniter
+package json
 
 type nilAny struct {
 	baseAny

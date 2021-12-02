@@ -1,4 +1,4 @@
-package jsoniter
+package json
 
 var digits []uint32
 
